@@ -36,6 +36,11 @@ module dma_master_ahb3l #(parameter fifo_size_exp = 5) (
     output logic                    o_last_trnsct,
     output logic                    o_smaller_size,
 
+    // save haddress
+    input  logic [31:0]             i_haddr_save,
+    output logic                    o_haddr_save_refresh,
+    output logic [31:0]             o_haddr_save_nxt,
+
     // flags
     output logic                    o_idle,
     output logic                    o_fail
@@ -302,9 +307,10 @@ assign sw_idle_to_addr = state_idle & i_enable & fifo_left_1_and_more_trans & nd
 assign sw_addr_to_addata = state_addr & i_hready &
     fifo_left_2_and_more_beats & ndtr_left_2_and_more_beats & (~end_beat | ~i_relevance_req);
 assign sw_addata_to_data = state_addata & i_hready & (small_data | (end_beat & i_relevance_req) |
-    (end_beat & ~fifo_left_1_and_more_trans) | (end_beat & ndtr_left_1p1_and_less_trans) | dis_stream);
+    (end_beat & ~fifo_left_1_and_more_trans) | (end_beat & ndtr_left_1p1_and_less_trans) | dis_stream |
+    (~i_enable & end_beat));
 assign sw_addr_to_data = state_addr & i_hready &
-    (fifo_left_1_beats | ndtr_left_1_beats | (end_beat & i_relevance_req) | dis_stream);
+    (fifo_left_1_beats | ndtr_left_1_beats | (end_beat & i_relevance_req) | dis_stream | (~i_enable & end_beat));
 assign sw_data_to_addr = state_data & i_enable & i_hready & /*fifo_left_more_2_trans*/fifo_left_1p1_and_more_trans &
     ndtr_left_2_and_more_beats & (i_request | ~i_relevance_req) & fifo_flush;
 assign sw_to_idle = ~i_enable;
@@ -416,32 +422,33 @@ assign haddr_reload = (state_idle & start_work) |
 assign haddr_inc = (state_addr | state_addata) & i_inc_en & i_hready;
 always_comb begin: next_haddress
     if (haddr_reload) begin
-        nxt_haddr = i_addr;
+        o_haddr_save_nxt = i_addr;
     end
     else if (haddr_inc) begin
         if (i_fix_inc) begin
-            nxt_haddr = o_haddr + 32'h4;
+            o_haddr_save_nxt = i_haddr_save + 32'h4;
         end
         else begin
             case (i_size)
                 bytew: begin
-                    nxt_haddr = o_haddr + 32'h1;
+                    o_haddr_save_nxt = i_haddr_save + 32'h1;
                 end
                 hword: begin
-                    nxt_haddr = o_haddr + 32'h2;
+                    o_haddr_save_nxt = i_haddr_save + 32'h2;
                 end
                 word: begin
-                    nxt_haddr = o_haddr + 32'h4;
+                    o_haddr_save_nxt = i_haddr_save + 32'h4;
                 end
-                default: nxt_haddr = o_haddr;
+                default: o_haddr_save_nxt = i_haddr_save;
             endcase
         end
     end
     else begin
-        nxt_haddr = o_haddr;
+        o_haddr_save_nxt = i_haddr_save;
     end
 end
 
+assign o_haddr_save_refresh = haddr_refresh;
 assign start_work = i_init_haddr;
 
 // FIFO output
@@ -486,9 +493,10 @@ assign o_setget_data = (state_addata | state_data) & i_hready;
 assign o_hmastlock = state_addr | state_addata;
 
 assign haddr_refresh = haddr_reload | state_addr | state_addata;
-always_ff @(posedge i_hclk, negedge i_hnreset)
-    if (!i_hnreset) o_haddr <= {wbus{1'b0}};
-    else if (haddr_refresh) o_haddr <= nxt_haddr;
+assign o_haddr = i_haddr_save;
+// always_ff @(posedge i_hclk, negedge i_hnreset)
+//     if (!i_hnreset) o_haddr <= {wbus{1'b0}};
+//     else if (haddr_refresh) o_haddr <= nxt_haddr;
 
 assign o_hwrite = (state_addr | state_addata) & i_write;
 assign o_hsize = (state_addr | state_addata) ? {1'b0, i_size}: 3'd0;

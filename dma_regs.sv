@@ -42,6 +42,8 @@ module dma_regs #(parameter numb_ch = 1, fifo_size_exp = 5) (
     output logic        o_cr_minc[numb_ch-1:0],
     output logic        o_cr_pinc[numb_ch-1:0],
     output logic [1:0]  o_cr_dir[numb_ch-1:0],
+    output logic        o_dir_pbus_to_mbus[numb_ch-1:0],
+    output logic        o_dir_mbus_to_pbus[numb_ch-1:0],
     output logic        o_cr_tcie[numb_ch-1:0],
     output logic        o_cr_htie[numb_ch-1:0],
     output logic        o_cr_teie[numb_ch-1:0],
@@ -157,7 +159,7 @@ module dma_regs #(parameter numb_ch = 1, fifo_size_exp = 5) (
     logic               cr_circ_correct1[numb_ch-1:0];
     logic               cr_circ[numb_ch-1:0];
     logic [1:0]         cr_dir[numb_ch-1:0];
-    logic               dir_pbus_to_mbus[numb_ch-1:0];
+    // logic               dir_pbus_to_mbus[numb_ch-1:0];
     logic               cr_pfctrl_correct[numb_ch-1:0];
     logic               cr_pfctrl[numb_ch-1:0];
     logic               cr_tcie[numb_ch-1:0];
@@ -493,7 +495,8 @@ module dma_regs #(parameter numb_ch = 1, fifo_size_exp = 5) (
                 if (!i_nreset) cr_dir[ch] <= 2'd0;
                 else if (cr_write_en_prot[ch] && byte0_sel) cr_dir[ch] <= i_wdata[7:6];
 
-            assign dir_pbus_to_mbus[ch] = (cr_dir[ch] == periph_to_mem) || (cr_dir[ch] == mem_to_mem);
+            assign o_dir_mbus_to_pbus[ch] = cr_dir[ch] == mem_to_periph;
+            assign o_dir_pbus_to_mbus[ch] = (cr_dir[ch] == periph_to_mem) || (cr_dir[ch] == mem_to_mem);
 
             assign cr_pfctrl_correct[ch] = pend_cr_en[ch] & (cr_dir[ch] == mem_to_mem) & cr_pfctrl[ch];
             always_ff @(posedge i_clk, negedge i_nreset)
@@ -554,7 +557,7 @@ module dma_regs #(parameter numb_ch = 1, fifo_size_exp = 5) (
 
     always_comb begin: next_ndtr_src_decode
         for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-            if (dir_pbus_to_mbus[ch_cnt]) begin
+            if (o_dir_pbus_to_mbus[ch_cnt]) begin
                 nxt_ndtr_src[ch_cnt] = (ndtr_shadow[ch_cnt] << cr_msize[ch_cnt]) >> cr_psize[ch_cnt];
             end
             else begin
