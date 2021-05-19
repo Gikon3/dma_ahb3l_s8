@@ -3,8 +3,8 @@ module dma_ctrl #(parameter fifo_size_exp = 5) (
     input  logic        i_nreset,
 
     // coonnect to config registers
-    input  logic [15:0]             i_ndtr,
-    input  logic [17:0]             i_ndtr_src,
+    // input  logic [15:0]             i_ndtr,
+    // input  logic [17:0]             i_ndtr_src,
     input  logic [1:0]              i_dir,
     input  logic                    i_dir_mbus_to_pbus,
     input  logic                    i_dir_pbus_to_mbus,
@@ -70,15 +70,15 @@ assign pull_data = i_dir_pbus_to_mbus ? i_setget_data_m:
 assign o_write_m = i_dir_pbus_to_mbus;
 assign o_wdata_m = i_dir_pbus_to_mbus && i_dmdis ? i_fifo_rdata:
                    i_dir_pbus_to_mbus && !i_dmdis ? i_buf_rdata: 'd0;
-assign o_ndtr_m = i_dir_pbus_to_mbus ? {2'd0, i_ndtr}:
-                  i_dir_mbus_to_pbus ? i_ndtr_src: 18'd0;
+// assign o_ndtr_m = i_dir_pbus_to_mbus ? {2'd0, i_ndtr}:
+//                   i_dir_mbus_to_pbus ? i_ndtr_src: 18'd0;
 
 assign o_relevance_req = dir_per_to_mem | dir_mem_to_per;
 assign o_write_p = i_dir_mbus_to_pbus;
 assign o_wdata_p = i_dir_mbus_to_pbus && i_dmdis ? i_fifo_rdata:
                    i_dir_mbus_to_pbus && !i_dmdis ? i_buf_rdata: 'd0;
-assign o_ndtr_p = i_dir_pbus_to_mbus ? i_ndtr_src:
-                  i_dir_mbus_to_pbus ? {2'd0, i_ndtr}: 18'd0;
+// assign o_ndtr_p = i_dir_pbus_to_mbus ? i_ndtr_src:
+//                   i_dir_mbus_to_pbus ? {2'd0, i_ndtr}: 18'd0;
 
 assign o_numb_bytes_put = i_dir_pbus_to_mbus ? i_psize:
                           i_dir_mbus_to_pbus ? i_msize: 2'h0;

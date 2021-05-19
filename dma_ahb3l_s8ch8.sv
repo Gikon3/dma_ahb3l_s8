@@ -91,7 +91,7 @@ logic               enable_m;
 logic               write_m;
 logic [wbus-1:0]    wdata_m;
 logic [wbus-1:0]    rdata_m;
-logic [17:0]        ndtr_m;
+// logic [17:0]        ndtr_m;
 logic               setget_data_m;
 logic               last_trnsct_m;
 logic               smaller_size_m;
@@ -103,7 +103,7 @@ logic               relevance_request;
 logic               write_p;
 logic [wbus-1:0]    wdata_p;
 logic [wbus-1:0]    rdata_p;
-logic [17:0]        ndtr_p;
+// logic [17:0]        ndtr_p;
 logic               setget_data_p;
 logic               smaller_size_p;
 logic               idle_p;
@@ -212,6 +212,9 @@ logic               dis_stream[numb_ch-1:0];
 logic               init_haddr[numb_ch-1:0];
 logic               fifo_flush[numb_ch-1:0];
 
+logic [17:0]        ndt_mp[numb_ch-1:0];
+logic [17:0]        ndt_pp[numb_ch-1:0];
+
 logic               cr_ct_swap_mp;
 logic               ndtr_decr_mp;
 logic               ndtr_src_decr_mp;
@@ -318,6 +321,9 @@ dma_arbiter #(numb_ch, fifo_size) dma_arbiter_mp (
     .i_nreset(i_hnreset),
 
     .i_en_stream(cr_en),
+    .i_size(cr_msize),
+    .i_burst(cr_mburst),
+    .i_ndt(ndt_mp),
     .i_pl(cr_pl),
     .i_relevance_req(1'b0),
     .i_requests(request),
@@ -332,6 +338,9 @@ dma_arbiter #(numb_ch, fifo_size) dma_arbiter_pp (
     .i_nreset(i_hnreset),
 
     .i_en_stream(cr_en),
+    .i_size(cr_psize),
+    .i_burst(cr_pburst),
+    .i_ndt(ndt_pp),
     .i_pl(cr_pl),
     .i_relevance_req(1'b1),
     .i_requests(request),
@@ -346,8 +355,8 @@ dma_ctrl #(fifo_size) dma_ctrl_mp (
     .i_nreset(i_hnreset),
 
     // coonnect to config registers
-    .i_ndtr(ndtr[stream_sel_mp]),
-    .i_ndtr_src(ndtr_src[stream_sel_mp]),
+    // .i_ndtr(ndtr[stream_sel_mp]),
+    // .i_ndtr_src(ndtr_src[stream_sel_mp]),
     .i_dir(cr_dir[stream_sel_mp]),
     .i_dir_mbus_to_pbus(dir_mbus_to_pbus[stream_sel_mp]),
     .i_dir_pbus_to_mbus(dir_pbus_to_mbus[stream_sel_mp]),
@@ -362,7 +371,7 @@ dma_ctrl #(fifo_size) dma_ctrl_mp (
     .o_write_m(write_m),
     .o_wdata_m(wdata_m),
     .i_rdata_m(rdata_m),
-    .o_ndtr_m(ndtr_m),
+    // .o_ndtr_m(ndtr_m),
     .i_setget_data_m(setget_data_m),
     .i_smaller_size_m(smaller_size_m),
 
@@ -370,10 +379,10 @@ dma_ctrl #(fifo_size) dma_ctrl_mp (
     .o_relevance_req(),
     .o_write_p(),
     .o_wdata_p(),
-    .i_rdata_p(rdata_p),
-    .o_ndtr_p(),
-    .i_setget_data_p(setget_data_p),
-    .i_smaller_size_p(smaller_size_p),
+    .i_rdata_p(/*rdata_p*/32'd0),
+    // .o_ndtr_p(),
+    .i_setget_data_p(/*setget_data_p*/1'b0),
+    .i_smaller_size_p(/*smaller_size_p*/1'b0),
 
     // connect to FIFO
     .o_numb_bytes_put(fifo_numb_bytes_put_mp),
@@ -397,8 +406,8 @@ dma_ctrl #(fifo_size) dma_ctrl_pp (
     .i_nreset(i_hnreset),
 
     // coonnect to config registers
-    .i_ndtr(ndtr[stream_sel_pp]),
-    .i_ndtr_src(ndtr_src[stream_sel_pp]),
+    // .i_ndtr(ndtr[stream_sel_pp]),
+    // .i_ndtr_src(ndtr_src[stream_sel_pp]),
     .i_dir(cr_dir[stream_sel_pp]),
     .i_dir_mbus_to_pbus(dir_mbus_to_pbus[stream_sel_pp]),
     .i_dir_pbus_to_mbus(dir_pbus_to_mbus[stream_sel_pp]),
@@ -412,17 +421,17 @@ dma_ctrl #(fifo_size) dma_ctrl_pp (
     // connect to memory master
     .o_write_m(),
     .o_wdata_m(),
-    .i_rdata_m(rdata_m),
-    .o_ndtr_m(),
-    .i_setget_data_m(setget_data_m),
-    .i_smaller_size_m(smaller_size_m),
+    .i_rdata_m(/*rdata_m*/32'd0),
+    // .o_ndtr_m(),
+    .i_setget_data_m(/*setget_data_m*/1'b0),
+    .i_smaller_size_m(/*smaller_size_m*/1'b0),
 
     // connect to peripheral master
     .o_relevance_req(relevance_request),
     .o_write_p(write_p),
     .o_wdata_p(wdata_p),
     .i_rdata_p(rdata_p),
-    .o_ndtr_p(ndtr_p),
+    // .o_ndtr_p(ndtr_p),
     .i_setget_data_p(setget_data_p),
     .i_smaller_size_p(smaller_size_p),
 
@@ -442,6 +451,34 @@ dma_ctrl #(fifo_size) dma_ctrl_pp (
     .o_buf_wdata(buf_wdata_pp),
     .i_buf_rdata(buf_rdata[stream_sel_pp])
 );
+
+always_comb begin: g_ndt_mp
+    for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
+        if (dir_mbus_to_pbus[ch_cnt]) begin
+            ndt_mp[ch_cnt] = ndtr_src[ch_cnt];
+        end
+        else if (dir_pbus_to_mbus[ch_cnt]) begin
+            ndt_mp[ch_cnt] = {2'h0, ndtr[ch_cnt]};
+        end
+        else begin
+            ndt_mp[ch_cnt] = 'd0;
+        end
+    end
+end
+
+always_comb begin: g_ndt_pp
+    for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
+        if (dir_mbus_to_pbus[ch_cnt]) begin
+            ndt_pp[ch_cnt] = {2'h0, ndtr[ch_cnt]};
+        end
+        else if (dir_pbus_to_mbus[ch_cnt]) begin
+            ndt_pp[ch_cnt] = ndtr_src[ch_cnt];
+        end
+        else begin
+            ndt_pp[ch_cnt] = 'd0;
+        end
+    end
+end
 
 generate
     for (ch = 0; ch < numb_ch; ++ch) begin: g_haddr_save_mp_array
@@ -503,7 +540,7 @@ dma_master_ahb3l #(fifo_size) dma_master_mp (
     .i_size(cr_msize[stream_sel_mp]),
     .i_wdata(wdata_m),
     .o_rdata(rdata_m),
-    .i_ndtr(ndtr_m),
+    .i_ndtr(/*ndtr_m*/ndt_mp[stream_sel_mp]),
     .i_fifo_left_bytes(fifo_left_bytes_mp[stream_sel_mp]),
     .o_setget_data(setget_data_m),
     .o_last_trnsct(last_trnsct_m),
@@ -547,7 +584,7 @@ dma_master_ahb3l #(fifo_size) dma_master_pp (
     .i_size(cr_psize[stream_sel_pp]),
     .i_wdata(wdata_p),
     .o_rdata(rdata_p),
-    .i_ndtr(ndtr_p),
+    .i_ndtr(/*ndtr_p*/ndt_pp[stream_sel_pp]),
     .i_fifo_left_bytes(fifo_left_bytes_pp[stream_sel_pp]),
     .o_setget_data(setget_data_p),
     .o_last_trnsct(),

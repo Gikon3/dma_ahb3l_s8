@@ -3,6 +3,9 @@ module dma_arbiter #(parameter numb_ch = 1, fifo_size = 5) (
     input  logic                            i_nreset,
 
     input  logic                            i_en_stream[numb_ch-1:0],
+    input  logic [1:0]                      i_size[numb_ch-1:0],
+    input  logic [1:0]                      i_burst[numb_ch-1:0],
+    input  logic [17:0]                     i_ndt[numb_ch-1:0],
     input  logic [1:0]                      i_pl[numb_ch-1:0],
     input  logic                            i_relevance_req,
     input  logic                            i_requests[numb_ch-1:0],
@@ -14,7 +17,9 @@ module dma_arbiter #(parameter numb_ch = 1, fifo_size = 5) (
 
 genvar ch;
 
-enum logic [1:0] {st_swap, st_work} state_list;
+enum logic [1:0] {st_idle, st_swap, st_work} state_list;
+enum logic [1:0] {bytew, hword, word} size_list;
+enum logic [1:0] {single, inc4, inc8, inc16} burst_list;
 
 logic               change_state;
 logic [1:0]         nxt_state;
@@ -26,7 +31,10 @@ logic               sw_swap_to_work;
 logic               sw_work_to_swap;
 
 logic                           en_stream_or;
-logic                           fifo_not_empty_full[numb_ch-1:0];
+logic [11:0]                    fifo_left_beats[numb_ch-1:0];
+logic                           fifo_residual_data[numb_ch-1:0];
+logic                           fifo_left_data[numb_ch-1:0];
+logic [1:0]                     pl[numb_ch-1:0];
 logic [dma_log2(numb_ch)-1:0]   nxt_stream;
 logic                           change_stream;
 
@@ -44,20 +52,12 @@ assign sw_work_to_swap = state_work & (o_stream_sel != nxt_stream);
 always_comb begin: fsm_arbiter
     case (cur_state)
         st_swap: begin
-            if (sw_swap_to_work) begin
-                nxt_state = st_work;
-            end
-            else begin
-                nxt_state = st_swap;
-            end
+            if (sw_swap_to_work) nxt_state = st_work;
+            else nxt_state = st_swap;
         end
         st_work: begin
-            if (sw_work_to_swap) begin
-                nxt_state = st_swap;
-            end
-            else begin
-                nxt_state = st_work;
-            end
+            if (sw_work_to_swap) nxt_state = st_swap;
+            else nxt_state = st_work;
         end
         default: begin
             nxt_state = st_swap;
@@ -72,18 +72,55 @@ always_comb begin: arbiter_sw_idle_to_work_gen
     end
 end
 
-always_comb begin: arbiter_fifo_not_empty
+always_comb begin: arbiter_fifo_left_beats
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        fifo_not_empty_full[ch_cnt] = |i_left_bytes[ch_cnt];
+        case (i_size[ch_cnt])
+            bytew: fifo_left_beats[ch_cnt] = i_left_bytes[ch_cnt];
+            hword: fifo_left_beats[ch_cnt] = i_left_bytes[ch_cnt] >> 1;
+            default: fifo_left_beats[ch_cnt] = i_left_bytes[ch_cnt] >> 2;
+        endcase
+        case (i_burst[ch_cnt])
+            single: fifo_left_beats[ch_cnt] = fifo_left_beats[ch_cnt];
+            inc4: fifo_left_beats[ch_cnt] = fifo_left_beats[ch_cnt] << 2;
+            inc8: fifo_left_beats[ch_cnt] = fifo_left_beats[ch_cnt] << 4;
+            default: fifo_left_beats[ch_cnt] = fifo_left_beats[ch_cnt] << 8;
+        endcase
+    end
+end
+
+always_comb begin: arbiter_fifo_residual_data
+    for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
+        case (i_burst[ch_cnt])
+            single: fifo_residual_data[ch_cnt] = i_ndt[ch_cnt] < i_size[ch_cnt];
+            inc4: fifo_residual_data[ch_cnt] = i_ndt[ch_cnt] < (i_size[ch_cnt] << 2);
+            inc8: fifo_residual_data[ch_cnt] = i_ndt[ch_cnt] < (i_size[ch_cnt] << 4);
+            default: fifo_residual_data[ch_cnt] = i_ndt[ch_cnt] < (i_size[ch_cnt] << 8);
+        endcase
+    end
+end
+
+always_comb begin: arbiter_fifo_left_data
+    for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
+        fifo_left_data[ch_cnt] = |fifo_left_beats[ch_cnt] | fifo_residual_data[ch_cnt];
+    end
+end
+
+always_comb begin: arbiter_pl
+    for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
+        if (i_en_stream[ch_cnt]) begin
+            pl[ch_cnt] = i_pl[ch_cnt];
+        end
+        else begin
+            pl[ch_cnt] = 0;
+        end
     end
 end
 
 always_comb begin: arbiter_nxt_stream
-    nxt_stream = 0;
-    for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        if (i_en_stream[ch_cnt] && fifo_not_empty_full[ch_cnt] && (i_requests[ch_cnt] || !i_relevance_req)) begin
+    nxt_stream = o_stream_sel;
+    for (int ch_cnt = numb_ch - 1; ch_cnt >= 0; --ch_cnt) begin
+        if (i_en_stream[ch_cnt] && pl[ch_cnt] >= pl[nxt_stream] && fifo_left_data[ch_cnt] && (i_requests[ch_cnt] || !i_relevance_req)) begin
             nxt_stream = ch_cnt;
-            break;
         end
     end
 end
