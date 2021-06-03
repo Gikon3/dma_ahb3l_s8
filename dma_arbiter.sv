@@ -7,7 +7,7 @@ module dma_arbiter #(parameter numb_ch = 1, fifo_size = 5) (
     input  logic [1:0]                      i_burst[numb_ch-1:0],
     input  logic [17:0]                     i_ndt[numb_ch-1:0],
     input  logic [1:0]                      i_pl[numb_ch-1:0],
-    input  logic                            i_relevance_req,
+    input  logic                            i_relevance_req[numb_ch-1:0],
     input  logic                            i_requests[numb_ch-1:0],
     input  logic [fifo_size:0]              i_left_bytes[numb_ch-1:0],
     input  logic                            i_master_ready,
@@ -119,7 +119,7 @@ end
 always_comb begin: arbiter_nxt_stream
     nxt_stream = o_stream_sel;
     for (int ch_cnt = numb_ch - 1; ch_cnt >= 0; --ch_cnt) begin
-        if (i_en_stream[ch_cnt] && pl[ch_cnt] >= pl[nxt_stream] && fifo_left_data[ch_cnt] && (i_requests[ch_cnt] || !i_relevance_req)) begin
+        if (i_en_stream[ch_cnt] && pl[ch_cnt] >= pl[nxt_stream] && fifo_left_data[ch_cnt] && (i_requests[ch_cnt] || !i_relevance_req[ch_cnt])) begin
             nxt_stream = ch_cnt;
         end
     end

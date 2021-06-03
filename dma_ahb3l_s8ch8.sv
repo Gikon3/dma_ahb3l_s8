@@ -1,47 +1,51 @@
 module dma_ahb3l_s8ch8 (
-    input  logic        i_hclk,
-    input  logic        i_hnreset,
+    BusAHB.slave        ahb_sl,
+    BusAHB.master       ahb_mp,
+    BusAHB.master       ahb_pp,
 
-    // AHB connection to master
-    input  logic        i_hsel_s,
-    input  logic [31:0] i_haddr_s,
-    input  logic        i_hwrite_s,
-    input  logic [2:0]  i_hsize_s,
-    input  logic [1:0]  i_htrans_s,
-    input  logic        i_hready_s,
-    input  logic [31:0] i_hwdata_s,
-
-    output logic        o_hreadyout_s,
-    output logic        o_hresp_s,
-    output logic [31:0] o_hrdata_s,
-
-    // AHB connect to memory
-    output logic [31:0] o_haddr_m,
-    output logic        o_hwrite_m,
-    output logic [2:0]  o_hsize_m,
-    output logic [2:0]  o_hburst_m,
-    output logic [3:0]  o_hprot_m,
-    output logic [1:0]  o_htrans_m,
-    output logic [31:0] o_hwdata_m,
-    output logic        o_hmastlock_m,
-
-    input  logic        i_hready_m,
-    input  logic        i_hresp_m,
-    input  logic [31:0] i_hrdata_m,
-
-    // AHB connect to periph
-    output logic [31:0] o_haddr_p,
-    output logic        o_hwrite_p,
-    output logic [2:0]  o_hsize_p,
-    output logic [2:0]  o_hburst_p,
-    output logic [3:0]  o_hprot_p,
-    output logic [1:0]  o_htrans_p,
-    output logic [31:0] o_hwdata_p,
-    output logic        o_hmastlock_p,
-
-    input  logic        i_hready_p,
-    input  logic        i_hresp_p,
-    input  logic [31:0] i_hrdata_p,
+    // input  logic        i_hclk,
+    // input  logic        i_hnreset,
+    //
+    // // AHB connection to master
+    // input  logic        i_hsel_s,
+    // input  logic [31:0] i_haddr_s,
+    // input  logic        i_hwrite_s,
+    // input  logic [2:0]  i_hsize_s,
+    // input  logic [1:0]  i_htrans_s,
+    // input  logic        i_hready_s,
+    // input  logic [31:0] i_hwdata_s,
+    //
+    // output logic        o_hreadyout_s,
+    // output logic        o_hresp_s,
+    // output logic [31:0] o_hrdata_s,
+    //
+    // // AHB connect to memory
+    // output logic [31:0] o_haddr_m,
+    // output logic        o_hwrite_m,
+    // output logic [2:0]  o_hsize_m,
+    // output logic [2:0]  o_hburst_m,
+    // output logic [3:0]  o_hprot_m,
+    // output logic [1:0]  o_htrans_m,
+    // output logic [31:0] o_hwdata_m,
+    // output logic        o_hmastlock_m,
+    //
+    // input  logic        i_hready_m,
+    // input  logic        i_hresp_m,
+    // input  logic [31:0] i_hrdata_m,
+    //
+    // // AHB connect to periph
+    // output logic [31:0] o_haddr_p,
+    // output logic        o_hwrite_p,
+    // output logic [2:0]  o_hsize_p,
+    // output logic [2:0]  o_hburst_p,
+    // output logic [3:0]  o_hprot_p,
+    // output logic [1:0]  o_htrans_p,
+    // output logic [31:0] o_hwdata_p,
+    // output logic        o_hmastlock_p,
+    //
+    // input  logic        i_hready_p,
+    // input  logic        i_hresp_p,
+    // input  logic [31:0] i_hrdata_p,
 
     // peripheral request
     input  logic [7:0]  i_req_s0,
@@ -72,6 +76,82 @@ localparam wbyte = 8;
 
 genvar ch;
 
+logic        i_hclk;
+logic        i_hnreset;
+// AHB connection to master
+logic        i_hsel_s;
+logic [31:0] i_haddr_s;
+logic        i_hwrite_s;
+logic [2:0]  i_hsize_s;
+logic [1:0]  i_htrans_s;
+logic        i_hready_s;
+logic [31:0] i_hwdata_s;
+logic        o_hreadyout_s;
+logic        o_hresp_s;
+logic [31:0] o_hrdata_s;
+// AHB connect to memory
+logic [31:0] o_haddr_m;
+logic        o_hwrite_m;
+logic [2:0]  o_hsize_m;
+logic [2:0]  o_hburst_m;
+logic [3:0]  o_hprot_m;
+logic [1:0]  o_htrans_m;
+logic [31:0] o_hwdata_m;
+logic        o_hmastlock_m;
+logic        i_hready_m;
+logic        i_hresp_m;
+logic [31:0] i_hrdata_m;
+// AHB connect to periph
+logic [31:0] o_haddr_p;
+logic        o_hwrite_p;
+logic [2:0]  o_hsize_p;
+logic [2:0]  o_hburst_p;
+logic [3:0]  o_hprot_p;
+logic [1:0]  o_htrans_p;
+logic [31:0] o_hwdata_p;
+logic        o_hmastlock_p;
+logic        i_hready_p;
+logic        i_hresp_p;
+logic [31:0] i_hrdata_p;
+
+assign i_hclk         = ahb_sl.hclk;
+assign i_hnreset      = ahb_sl.hresetn;
+// AHB connection to master
+assign i_hsel_s       = ahb_sl.hsel;
+assign i_haddr_s      = ahb_sl.haddr;
+assign i_hwrite_s     = ahb_sl.hwrite;
+assign i_hsize_s      = ahb_sl.hsize;
+assign i_htrans_s     = ahb_sl.htrans;
+assign i_hready_s     = ahb_sl.hready;
+assign i_hwdata_s     = ahb_sl.hwdata;
+assign ahb_sl.hreadyout     = o_hreadyout_s;
+assign ahb_sl.hresp         = o_hresp_s;
+assign ahb_sl.hrdata        = o_hrdata_s;
+// AHB connect to memory
+assign ahb_mp.haddr     = o_haddr_m;
+assign ahb_mp.hwrite    = o_hwrite_m;
+assign ahb_mp.hsize     = o_hsize_m;
+assign ahb_mp.hburst    = o_hburst_m;
+assign ahb_mp.hprot     = o_hprot_m;
+assign ahb_mp.htrans    = o_htrans_m;
+assign ahb_mp.hwdata    = o_hwdata_m;
+assign ahb_mp.hmastlock = o_hmastlock_m;
+assign i_hready_m       = ahb_mp.hready;
+assign i_hresp_m        = ahb_mp.hresp;
+assign i_hrdata_m       = ahb_mp.hrdata;
+// AHB connect to periph
+assign ahb_pp.haddr     = o_haddr_p;
+assign ahb_pp.hwrite    = o_hwrite_p;
+assign ahb_pp.hsize     = o_hsize_p;
+assign ahb_pp.hburst    = o_hburst_p;
+assign ahb_pp.hprot     = o_hprot_p;
+assign ahb_pp.htrans    = o_htrans_p;
+assign ahb_pp.hwdata    = o_hwdata_p;
+assign ahb_pp.hmastlock = o_hmastlock_p;
+assign i_hready_p       = ahb_pp.hready;
+assign i_hresp_p        = ahb_pp.hresp;
+assign i_hrdata_p       = ahb_pp.hrdata;
+
 logic [7:0]  requests[7:0];
 logic [7:0]  ltrnscts[7:0];
 
@@ -85,6 +165,7 @@ logic [wbus-1:0]        regs_rdata;
 logic [dma_log2(numb_ch)-1:0] stream_sel_mp;
 logic [dma_log2(numb_ch)-1:0] stream_sel_pp;
 
+logic               relevance_request[numb_ch-1:0];
 logic               request[numb_ch-1:0];
 logic               ltrnsct[numb_ch-1:0];
 logic               enable_m;
@@ -99,7 +180,7 @@ logic               idle_m;
 logic               fail_m;
 
 logic               enable_p;
-logic               relevance_request;
+// logic               relevance_request;
 logic               write_p;
 logic [wbus-1:0]    wdata_p;
 logic [wbus-1:0]    rdata_p;
@@ -255,6 +336,12 @@ logic [wbus-1:0]    haddr_save_nxt_pp;
 logic               haddr_save_refresh_dc_mp[numb_ch-1:0];
 logic               haddr_save_refresh_dc_pp[numb_ch-1:0];
 
+generate
+    for (ch = 0; ch < numb_ch; ++ch) begin: g_relevance_request
+        assign relevance_request[ch] = cr_dir[ch] == 2'd0 || cr_dir[ch] == 2'd1;
+    end
+endgenerate
+
 assign requests[0] = i_req_s0;
 assign requests[1] = i_req_s1;
 assign requests[2] = i_req_s2;
@@ -325,7 +412,7 @@ dma_arbiter #(numb_ch, fifo_size) dma_arbiter_mp (
     .i_burst(cr_mburst),
     .i_ndt(ndt_mp),
     .i_pl(cr_pl),
-    .i_relevance_req(1'b0),
+    .i_relevance_req({numb_ch{1'b0}}),
     .i_requests(request),
     .i_left_bytes(fifo_left_bytes_mp),
     .i_master_ready(idle_m),
@@ -342,7 +429,7 @@ dma_arbiter #(numb_ch, fifo_size) dma_arbiter_pp (
     .i_burst(cr_pburst),
     .i_ndt(ndt_pp),
     .i_pl(cr_pl),
-    .i_relevance_req(1'b1),
+    .i_relevance_req(/*1'b1*/relevance_request),
     .i_requests(request),
     .i_left_bytes(fifo_left_bytes_pp),
     .i_master_ready(idle_p),
@@ -420,7 +507,7 @@ dma_ctrl #(fifo_size) dma_ctrl_pp (
     .i_smaller_size_m(1'b0),
 
     // connect to peripheral master
-    .o_relevance_req(relevance_request),
+    .o_relevance_req(/*relevance_request*/),
     .o_write_p(write_p),
     .o_wdata_p(wdata_p),
     .i_rdata_p(rdata_p),
@@ -553,7 +640,7 @@ dma_master_ahb3l #(fifo_size) dma_master_pp (
     .i_dis_stream(dis_stream[stream_sel_pp]),
     .i_init_haddr(/*init_haddr[stream_sel_pp]*/1'b0),
     .i_request(request[stream_sel_pp]),
-    .i_relevance_req(relevance_request),
+    .i_relevance_req(/*relevance_request*/relevance_request[stream_sel_pp]),
     .i_addr(/*par[stream_sel_pp]*/'d0),
     .i_write(write_p),
     .i_inc_en(cr_pinc[stream_sel_pp]),
