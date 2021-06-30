@@ -3,50 +3,6 @@ module dma_ahb3l_s8ch8 (
     BusAHB.master       ahb_mp,
     BusAHB.master       ahb_pp,
 
-    // input  logic        i_hclk,
-    // input  logic        i_hnreset,
-    //
-    // // AHB connection to master
-    // input  logic        i_hsel_s,
-    // input  logic [31:0] i_haddr_s,
-    // input  logic        i_hwrite_s,
-    // input  logic [2:0]  i_hsize_s,
-    // input  logic [1:0]  i_htrans_s,
-    // input  logic        i_hready_s,
-    // input  logic [31:0] i_hwdata_s,
-    //
-    // output logic        o_hreadyout_s,
-    // output logic        o_hresp_s,
-    // output logic [31:0] o_hrdata_s,
-    //
-    // // AHB connect to memory
-    // output logic [31:0] o_haddr_m,
-    // output logic        o_hwrite_m,
-    // output logic [2:0]  o_hsize_m,
-    // output logic [2:0]  o_hburst_m,
-    // output logic [3:0]  o_hprot_m,
-    // output logic [1:0]  o_htrans_m,
-    // output logic [31:0] o_hwdata_m,
-    // output logic        o_hmastlock_m,
-    //
-    // input  logic        i_hready_m,
-    // input  logic        i_hresp_m,
-    // input  logic [31:0] i_hrdata_m,
-    //
-    // // AHB connect to periph
-    // output logic [31:0] o_haddr_p,
-    // output logic        o_hwrite_p,
-    // output logic [2:0]  o_hsize_p,
-    // output logic [2:0]  o_hburst_p,
-    // output logic [3:0]  o_hprot_p,
-    // output logic [1:0]  o_htrans_p,
-    // output logic [31:0] o_hwdata_p,
-    // output logic        o_hmastlock_p,
-    //
-    // input  logic        i_hready_p,
-    // input  logic        i_hresp_p,
-    // input  logic [31:0] i_hrdata_p,
-
     // peripheral request
     input  logic [7:0]  i_req_s0,
     input  logic [7:0]  i_req_s1,
