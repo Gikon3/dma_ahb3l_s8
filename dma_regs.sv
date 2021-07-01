@@ -73,7 +73,7 @@ localparam wbus = 32;
 localparam wbyte = 8;
 
 localparam numb_conf_regs = 6;
-localparam width_addr = /*$clog2*/dma_log2(numb_conf_regs * numb_ch + 4 - 1);
+localparam width_addr = $clog2(numb_conf_regs * numb_ch + 4 - 1);
 
 localparam lisr_addr   = 4'h0;  // DMA low interrupt status register
 localparam hisr_addr   = 4'h1;  // DMA high interrupt status register
@@ -745,22 +745,22 @@ always_comb begin: read_regs_mux
             o_rdata = hifcr_out;
         end
         else if (|cr_sel) begin
-            o_rdata = cr_out[dma_log2(cr_sel)];
+            o_rdata = cr_out[$clog2(cr_sel)];
         end
         else if (|ndtr_sel) begin
-            o_rdata = ndtr_out[dma_log2(ndtr_sel)];
+            o_rdata = ndtr_out[$clog2(ndtr_sel)];
         end
         else if (|par_sel) begin
-            o_rdata = par_out[dma_log2(par_sel)];
+            o_rdata = par_out[$clog2(par_sel)];
         end
         else if (|m0ar_sel) begin
-            o_rdata = m0ar_out[dma_log2(m0ar_sel)];
+            o_rdata = m0ar_out[$clog2(m0ar_sel)];
         end
         else if (|m1ar_sel) begin
-            o_rdata = m1ar_out[dma_log2(m1ar_sel)];
+            o_rdata = m1ar_out[$clog2(m1ar_sel)];
         end
         else if (|fcr_sel) begin
-            o_rdata = fcr_out[dma_log2(fcr_sel)];
+            o_rdata = fcr_out[$clog2(fcr_sel)];
         end
         else begin
             o_rdata = {wbus{1'b0}};

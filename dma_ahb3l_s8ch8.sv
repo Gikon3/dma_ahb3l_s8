@@ -118,8 +118,8 @@ logic [wbus/wbyte-1:0]  regs_byte_strobe;
 logic [wbus-1:0]        regs_wdata;
 logic [wbus-1:0]        regs_rdata;
 
-logic [dma_log2(numb_ch)-1:0] stream_sel_mp;
-logic [dma_log2(numb_ch)-1:0] stream_sel_pp;
+logic [$clog2(numb_ch)-1:0] stream_sel_mp;
+logic [$clog2(numb_ch)-1:0] stream_sel_pp;
 
 logic               relevance_request[numb_ch-1:0];
 logic               request[numb_ch-1:0];
@@ -786,158 +786,158 @@ assign cr_ct_swap_mp = last_trnsct_m;
 assign cr_ct_swap_pp = 1'b0;
 generate
     for (ch = 0; ch < 1; ++ch) begin: g_dc
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_haddr_save_refresh_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_haddr_save_refresh_mp (
             .i_addr(stream_sel_mp),
             .i_en(haddr_save_refresh_mp),
             .o_out(haddr_save_refresh_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_haddr_save_refresh_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_haddr_save_refresh_pp (
             .i_addr(stream_sel_pp),
             .i_en(haddr_save_refresh_pp),
             .o_out(haddr_save_refresh_dc_pp)
         );
 
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_put_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_put_mp (
             .i_addr(stream_sel_mp),
             .i_en(fifo_put_mp),
             .o_out(fifo_put_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_put_mp (
+        dma_dc #($clog2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_put_mp (
             .i_addr(stream_sel_mp),
             .i_en(fifo_numb_bytes_put_mp),
             .o_out(fifo_numb_bytes_put_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_pull_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_pull_mp (
             .i_addr(stream_sel_mp),
             .i_en(fifo_pull_mp),
             .o_out(fifo_pull_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_pull_mp (
+        dma_dc #($clog2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_pull_mp (
             .i_addr(stream_sel_mp),
             .i_en(fifo_numb_bytes_pull_mp),
             .o_out(fifo_numb_bytes_pull_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), wbus, numb_ch) dma_dc_fifo_wdata_mp (
+        dma_dc #($clog2(numb_ch), wbus, numb_ch) dma_dc_fifo_wdata_mp (
             .i_addr(stream_sel_mp),
             .i_en(fifo_wdata_mp),
             .o_out(fifo_wdata_dc_mp)
         );
 
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_put_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_put_pp (
             .i_addr(stream_sel_pp),
             .i_en(fifo_put_pp),
             .o_out(fifo_put_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_put_pp (
+        dma_dc #($clog2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_put_pp (
             .i_addr(stream_sel_pp),
             .i_en(fifo_numb_bytes_put_pp),
             .o_out(fifo_numb_bytes_put_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_pull_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_pull_pp (
             .i_addr(stream_sel_pp),
             .i_en(fifo_pull_pp),
             .o_out(fifo_pull_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_pull_pp (
+        dma_dc #($clog2(numb_ch), 2, numb_ch) dma_dc_numb_bytes_pull_pp (
             .i_addr(stream_sel_pp),
             .i_en(fifo_numb_bytes_pull_pp),
             .o_out(fifo_numb_bytes_pull_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), wbus, numb_ch) dma_dc_fifo_wdata_pp (
+        dma_dc #($clog2(numb_ch), wbus, numb_ch) dma_dc_fifo_wdata_pp (
             .i_addr(stream_sel_pp),
             .i_en(fifo_wdata_pp),
             .o_out(fifo_wdata_dc_pp)
         );
 
-        dma_dc #(dma_log2(numb_ch), wbus, numb_ch) dma_dc_buf_wdata_mp (
+        dma_dc #($clog2(numb_ch), wbus, numb_ch) dma_dc_buf_wdata_mp (
             .i_addr(stream_sel_mp),
             .i_en(buf_wdata_mp),
             .o_out(buf_wdata_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_buf_put_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_buf_put_mp (
             .i_addr(stream_sel_mp),
             .i_en(buf_put_mp),
             .o_out(buf_put_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_buf_pull_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_buf_pull_mp (
             .i_addr(stream_sel_mp),
             .i_en(buf_pull_mp),
             .o_out(buf_pull_dc_mp)
         );
 
-        dma_dc #(dma_log2(numb_ch), wbus, numb_ch) dma_dc_buf_wdata_pp (
+        dma_dc #($clog2(numb_ch), wbus, numb_ch) dma_dc_buf_wdata_pp (
             .i_addr(stream_sel_pp),
             .i_en(buf_wdata_pp),
             .o_out(buf_wdata_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_buf_put_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_buf_put_pp (
             .i_addr(stream_sel_pp),
             .i_en(buf_put_pp),
             .o_out(buf_put_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_buf_pull_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_buf_pull_pp (
             .i_addr(stream_sel_pp),
             .i_en(buf_pull_pp),
             .o_out(buf_pull_dc_pp)
         );
 
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_cr_ct_swap_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_cr_ct_swap_mp (
             .i_addr(stream_sel_mp),
             .i_en(cr_ct_swap_mp),
             .o_out(cr_ct_swap_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_ndtr_decr_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_ndtr_decr_mp (
             .i_addr(stream_sel_mp),
             .i_en(ndtr_decr_mp),
             .o_out(ndtr_decr_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_ndtr_src_decr_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_ndtr_src_decr_mp (
             .i_addr(stream_sel_mp),
             .i_en(ndtr_src_decr_mp),
             .o_out(ndtr_src_decr_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_smaller_size_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_smaller_size_mp (
             .i_addr(stream_sel_mp),
             .i_en(smaller_size_mp),
             .o_out(smaller_size_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_ahb_fail_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_ahb_fail_mp (
             .i_addr(stream_sel_mp),
             .i_en(fail_m),
             .o_out(ahb_fail_dc_mp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_idle_mp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_idle_mp (
             .i_addr(stream_sel_mp),
             .i_en(idle_m),
             .o_out(idle_dc_mp)
         );
 
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_cr_ct_swap_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_cr_ct_swap_pp (
             .i_addr(stream_sel_pp),
             .i_en(cr_ct_swap_pp),
             .o_out(cr_ct_swap_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_ndtr_decr_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_ndtr_decr_pp (
             .i_addr(stream_sel_pp),
             .i_en(ndtr_decr_pp),
             .o_out(ndtr_decr_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_ndtr_src_decr_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_ndtr_src_decr_pp (
             .i_addr(stream_sel_pp),
             .i_en(ndtr_src_decr_pp),
             .o_out(ndtr_src_decr_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_smaller_size_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_smaller_size_pp (
             .i_addr(stream_sel_pp),
             .i_en(smaller_size_pp),
             .o_out(smaller_size_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_ahb_fail_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_ahb_fail_pp (
             .i_addr(stream_sel_pp),
             .i_en(fail_p),
             .o_out(ahb_fail_dc_pp)
         );
-        dma_dc #(dma_log2(numb_ch), 1, numb_ch) dma_dc_idle_pp (
+        dma_dc #($clog2(numb_ch), 1, numb_ch) dma_dc_idle_pp (
             .i_addr(stream_sel_pp),
             .i_en(idle_p),
             .o_out(idle_dc_pp)

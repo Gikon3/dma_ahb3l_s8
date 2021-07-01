@@ -1,18 +1,18 @@
 module dma_arbiter #(parameter numb_ch = 1, fifo_size = 5) (
-    input  logic                            i_clk,
-    input  logic                            i_nreset,
+    input  logic                        i_clk,
+    input  logic                        i_nreset,
 
-    input  logic                            i_en_stream[numb_ch-1:0],
-    input  logic [1:0]                      i_size[numb_ch-1:0],
-    input  logic [1:0]                      i_burst[numb_ch-1:0],
-    input  logic [17:0]                     i_ndt[numb_ch-1:0],
-    input  logic [1:0]                      i_pl[numb_ch-1:0],
-    input  logic                            i_relevance_req[numb_ch-1:0],
-    input  logic                            i_requests[numb_ch-1:0],
-    input  logic [fifo_size:0]              i_left_bytes[numb_ch-1:0],
-    input  logic                            i_master_ready,
-    output logic [dma_log2(numb_ch)-1:0]    o_stream_sel,
-    output logic                            o_master_en
+    input  logic                        i_en_stream[numb_ch-1:0],
+    input  logic [1:0]                  i_size[numb_ch-1:0],
+    input  logic [1:0]                  i_burst[numb_ch-1:0],
+    input  logic [17:0]                 i_ndt[numb_ch-1:0],
+    input  logic [1:0]                  i_pl[numb_ch-1:0],
+    input  logic                        i_relevance_req[numb_ch-1:0],
+    input  logic                        i_requests[numb_ch-1:0],
+    input  logic [fifo_size:0]          i_left_bytes[numb_ch-1:0],
+    input  logic                        i_master_ready,
+    output logic [$clog2(numb_ch)-1:0]  o_stream_sel,
+    output logic                        o_master_en
 );
 
 genvar ch;
@@ -30,13 +30,13 @@ logic               state_work;
 logic               sw_swap_to_work;
 logic               sw_work_to_swap;
 
-logic                           en_stream_or;
-logic [11:0]                    fifo_left_beats[numb_ch-1:0];
-logic                           fifo_residual_data[numb_ch-1:0];
-logic                           fifo_left_data[numb_ch-1:0];
-logic [1:0]                     pl[numb_ch-1:0];
-logic [dma_log2(numb_ch)-1:0]   nxt_stream;
-logic                           change_stream;
+logic                       en_stream_or;
+logic [11:0]                fifo_left_beats[numb_ch-1:0];
+logic                       fifo_residual_data[numb_ch-1:0];
+logic                       fifo_left_data[numb_ch-1:0];
+logic [1:0]                 pl[numb_ch-1:0];
+logic [$clog2(numb_ch)-1:0] nxt_stream;
+logic                       change_stream;
 
 assign change_state = 1;
 always_ff @(posedge i_clk, negedge i_nreset)
