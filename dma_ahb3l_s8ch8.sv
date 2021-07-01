@@ -292,6 +292,8 @@ logic [wbus-1:0]    haddr_save_nxt_pp;
 logic               haddr_save_refresh_dc_mp[numb_ch-1:0];
 logic               haddr_save_refresh_dc_pp[numb_ch-1:0];
 
+logic               zero[numb_ch-1:0];
+
 generate
     for (ch = 0; ch < numb_ch; ++ch) begin: g_relevance_request
         assign relevance_request[ch] = cr_dir[ch] == 2'd0 || cr_dir[ch] == 2'd1;
@@ -359,6 +361,12 @@ generate
     end
 endgenerate
 
+generate
+    for (ch = 0; ch < numb_ch; ++ch) begin: g_zero
+        assign zero[ch] = 1'b0;
+    end
+endgenerate
+
 dma_arbiter #(numb_ch, fifo_size) dma_arbiter_mp (
     .i_clk(i_hclk),
     .i_nreset(i_hnreset),
@@ -368,7 +376,7 @@ dma_arbiter #(numb_ch, fifo_size) dma_arbiter_mp (
     .i_burst(cr_mburst),
     .i_ndt(ndt_mp),
     .i_pl(cr_pl),
-    .i_relevance_req({numb_ch{1'b0}}),
+    .i_relevance_req(zero),
     .i_requests(request),
     .i_left_bytes(fifo_left_bytes_mp),
     .i_master_ready(idle_m),
