@@ -558,10 +558,10 @@ endgenerate
 always_comb begin: next_ndtr_src_decode
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
         if (o_dir_pbus_to_mbus[ch_cnt]) begin
-            nxt_ndtr_src[ch_cnt] = (ndtr_shadow[ch_cnt] << cr_msize[ch_cnt]) >> cr_psize[ch_cnt];
+            nxt_ndtr_src[ch_cnt] = ({2'h0, ndtr_shadow[ch_cnt]} << cr_msize[ch_cnt]) >> cr_psize[ch_cnt];
         end
         else begin
-            nxt_ndtr_src[ch_cnt] = (ndtr_shadow[ch_cnt] << cr_psize[ch_cnt]) >> cr_msize[ch_cnt];
+            nxt_ndtr_src[ch_cnt] = ({2'h0, ndtr_shadow[ch_cnt]} << cr_psize[ch_cnt]) >> cr_msize[ch_cnt];
         end
     end
 end
