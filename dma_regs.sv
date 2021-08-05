@@ -225,6 +225,20 @@ logic [wbus-1:0]    fcr_out[numb_ch-1:0];
 
 logic               sel_mar[numb_ch-1:0];
 
+logic [numb_ch-1:0] cr_sel_bin;
+logic [numb_ch-1:0] ndtr_sel_bin;
+logic [numb_ch-1:0] par_sel_bin;
+logic [numb_ch-1:0] m0ar_sel_bin;
+logic [numb_ch-1:0] m1ar_sel_bin;
+logic [numb_ch-1:0] fcr_sel_bin;
+
+logic [$clog2(numb_ch):0]   cr_sel_numb;
+logic [$clog2(numb_ch):0]   ndtr_sel_numb;
+logic [$clog2(numb_ch):0]   par_sel_numb;
+logic [$clog2(numb_ch):0]   m0ar_sel_numb;
+logic [$clog2(numb_ch):0]   m1ar_sel_numb;
+logic [$clog2(numb_ch):0]   fcr_sel_numb;
+
 // fifo threshold check
 always_comb begin: size_mem_bytes_decode
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
@@ -705,32 +719,57 @@ always_comb begin: combine_regs_output
     end
 end
 
-always_comb begin: read_regs_mux
-    logic [numb_ch-1:0] cr_sel;
-    logic [numb_ch-1:0] ndtr_sel;
-    logic [numb_ch-1:0] par_sel;
-    logic [numb_ch-1:0] m0ar_sel;
-    logic [numb_ch-1:0] m1ar_sel;
-    logic [numb_ch-1:0] fcr_sel;
+always_comb begin: sel_bin_regs
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        cr_sel[ch_cnt] = reg_cr_sel[ch_cnt];
+        cr_sel_bin[ch_cnt] = reg_cr_sel[ch_cnt];
     end
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        ndtr_sel[ch_cnt] = reg_ndtr_sel[ch_cnt];
+        ndtr_sel_bin[ch_cnt] = reg_ndtr_sel[ch_cnt];
     end
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        par_sel[ch_cnt] = reg_par_sel[ch_cnt];
+        par_sel_bin[ch_cnt] = reg_par_sel[ch_cnt];
     end
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        m0ar_sel[ch_cnt] = reg_m0ar_sel[ch_cnt];
+        m0ar_sel_bin[ch_cnt] = reg_m0ar_sel[ch_cnt];
     end
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        m1ar_sel[ch_cnt] = reg_m1ar_sel[ch_cnt];
+        m1ar_sel_bin[ch_cnt] = reg_m1ar_sel[ch_cnt];
     end
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        fcr_sel[ch_cnt] = reg_fcr_sel[ch_cnt];
+        fcr_sel_bin[ch_cnt] = reg_fcr_sel[ch_cnt];
     end
+end
 
+generate
+    for (ch = 0; ch < 1; ++ch) begin: sel_numb_regs
+        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_cr(
+            .i_x(cr_sel_bin),
+            .i_q(cr_sel_numb)
+        );
+        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_ndtr(
+            .i_x(ndtr_sel_bin),
+            .i_q(ndtr_sel_numb)
+        );
+        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_par(
+            .i_x(par_sel_bin),
+            .i_q(par_sel_numb)
+        );
+        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_m0ar(
+            .i_x(m0ar_sel_bin),
+            .i_q(m0ar_sel_numb)
+        );
+        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_m1ar(
+            .i_x(m1ar_sel_bin),
+            .i_q(m1ar_sel_numb)
+        );
+        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_fcr(
+            .i_x(fcr_sel_bin),
+            .i_q(fcr_sel_numb)
+        );
+    end
+endgenerate
+
+always_comb begin: read_regs_mux
     if (i_read_en) begin
         if (reg_lisr_sel) begin
             o_rdata = lisr_out;
@@ -744,23 +783,23 @@ always_comb begin: read_regs_mux
         else if (reg_hifcr_sel) begin
             o_rdata = hifcr_out;
         end
-        else if (|cr_sel) begin
-            o_rdata = cr_out[$clog2(cr_sel)];
+        else if (|cr_sel_bin) begin
+            o_rdata = cr_out[cr_sel_numb];
         end
-        else if (|ndtr_sel) begin
-            o_rdata = ndtr_out[$clog2(ndtr_sel)];
+        else if (|ndtr_sel_bin) begin
+            o_rdata = ndtr_out[ndtr_sel_numb];
         end
-        else if (|par_sel) begin
-            o_rdata = par_out[$clog2(par_sel)];
+        else if (|par_sel_bin) begin
+            o_rdata = par_out[par_sel_numb];
         end
-        else if (|m0ar_sel) begin
-            o_rdata = m0ar_out[$clog2(m0ar_sel)];
+        else if (|m0ar_sel_bin) begin
+            o_rdata = m0ar_out[m0ar_sel_numb];
         end
-        else if (|m1ar_sel) begin
-            o_rdata = m1ar_out[$clog2(m1ar_sel)];
+        else if (|m1ar_sel_bin) begin
+            o_rdata = m1ar_out[m1ar_sel_numb];
         end
-        else if (|fcr_sel) begin
-            o_rdata = fcr_out[$clog2(fcr_sel)];
+        else if (|fcr_sel_bin) begin
+            o_rdata = fcr_out[fcr_sel_numb];
         end
         else begin
             o_rdata = {wbus{1'b0}};
