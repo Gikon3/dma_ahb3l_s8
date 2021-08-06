@@ -742,27 +742,27 @@ end
 
 generate
     for (ch = 0; ch < 1; ++ch) begin: sel_numb_regs
-        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_cr(
+        dma_reg_sel #(.numb_ch(numb_ch)) dma_numb_sel_cr(
             .i_x(cr_sel_bin),
             .i_q(cr_sel_numb)
         );
-        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_ndtr(
+        dma_reg_sel #(.numb_ch(numb_ch)) dma_numb_sel_ndtr(
             .i_x(ndtr_sel_bin),
             .i_q(ndtr_sel_numb)
         );
-        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_par(
+        dma_reg_sel #(.numb_ch(numb_ch)) dma_numb_sel_par(
             .i_x(par_sel_bin),
             .i_q(par_sel_numb)
         );
-        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_m0ar(
+        dma_reg_sel #(.numb_ch(numb_ch)) dma_numb_sel_m0ar(
             .i_x(m0ar_sel_bin),
             .i_q(m0ar_sel_numb)
         );
-        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_m1ar(
+        dma_reg_sel #(.numb_ch(numb_ch)) dma_numb_sel_m1ar(
             .i_x(m1ar_sel_bin),
             .i_q(m1ar_sel_numb)
         );
-        dma_reg_sel #(.namb_ch(numb_ch)) dma_numb_sel_fcr(
+        dma_reg_sel #(.numb_ch(numb_ch)) dma_numb_sel_fcr(
             .i_x(fcr_sel_bin),
             .i_q(fcr_sel_numb)
         );
