@@ -6,23 +6,6 @@
 
 #define DMA_NO_CH       8
 
-typedef struct DmaMap_ {
-    volatile uint32_t LISR;
-    volatile uint32_t HISR;
-    volatile uint32_t LIFCR;
-    volatile uint32_t HIFCR;
-    struct {
-        volatile uint32_t CR;
-        volatile uint32_t NDTR;
-        volatile uint32_t PAR;
-        volatile uint32_t M0AR;
-        volatile uint32_t M1AR;
-        volatile uint32_t FCR;
-    } STREAM[DMA_NO_CH];
-} DmaMap;
-
-#define DMA ((DmaMap*)(BA_DMA))
-
 typedef enum DmaBurst_
 {
     burstSingle,
