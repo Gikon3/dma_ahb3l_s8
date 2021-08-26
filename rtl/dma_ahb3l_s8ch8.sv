@@ -1,5 +1,11 @@
 module dma_ahb3l_s8ch8 (
+`ifdef DMA_APB
+    input  logic        i_hclk,
+    input  logic        i_hnreset,
+    BusAPB.slave        apb_sl,
+`else
     BusAHB.slave        ahb_sl,
+`endif
     BusAHB.master       ahb_mp,
     BusAHB.master       ahb_pp,
 
@@ -32,44 +38,74 @@ localparam wbyte = 8;
 
 genvar ch;
 
-logic        i_hclk;
-logic        i_hnreset;
-// AHB connection to master
-logic        i_hsel_s;
-logic [31:0] i_haddr_s;
-logic        i_hwrite_s;
-logic [2:0]  i_hsize_s;
-logic [1:0]  i_htrans_s;
-logic        i_hready_s;
-logic [31:0] i_hwdata_s;
-logic        o_hreadyout_s;
-logic        o_hresp_s;
-logic [31:0] o_hrdata_s;
-// AHB connect to memory
-logic [31:0] o_haddr_m;
-logic        o_hwrite_m;
-logic [2:0]  o_hsize_m;
-logic [2:0]  o_hburst_m;
-logic [3:0]  o_hprot_m;
-logic [1:0]  o_htrans_m;
-logic [31:0] o_hwdata_m;
-logic        o_hmastlock_m;
-logic        i_hready_m;
-logic        i_hresp_m;
-logic [31:0] i_hrdata_m;
-// AHB connect to periph
-logic [31:0] o_haddr_p;
-logic        o_hwrite_p;
-logic [2:0]  o_hsize_p;
-logic [2:0]  o_hburst_p;
-logic [3:0]  o_hprot_p;
-logic [1:0]  o_htrans_p;
-logic [31:0] o_hwdata_p;
-logic        o_hmastlock_p;
-logic        i_hready_p;
-logic        i_hresp_p;
-logic [31:0] i_hrdata_p;
+`ifdef DMA_APB
+logic           i_pclk;
+logic           i_pnreset;
 
+// APB connection to master
+logic           i_psel_s;
+logic           i_penable_s;
+logic [31:0]    i_paddr_s;
+logic           i_pwrite_s;
+logic [31:0]    i_pwdata_s;
+logic           o_pready_s;
+logic           o_pslverr_s;
+logic [31:0]    o_prdata_s;
+`else
+logic           i_hclk;
+logic           i_hnreset;
+
+// AHB connection to master
+logic           i_hsel_s;
+logic [31:0]    i_haddr_s;
+logic           i_hwrite_s;
+logic [2:0]     i_hsize_s;
+logic [1:0]     i_htrans_s;
+logic           i_hready_s;
+logic [31:0]    i_hwdata_s;
+logic           o_hreadyout_s;
+logic           o_hresp_s;
+logic [31:0]    o_hrdata_s;
+`endif
+// AHB connect to memory
+logic [31:0]    o_haddr_m;
+logic           o_hwrite_m;
+logic [2:0]     o_hsize_m;
+logic [2:0]     o_hburst_m;
+logic [3:0]     o_hprot_m;
+logic [1:0]     o_htrans_m;
+logic [31:0]    o_hwdata_m;
+logic           o_hmastlock_m;
+logic           i_hready_m;
+logic           i_hresp_m;
+logic [31:0]    i_hrdata_m;
+// AHB connect to periph
+logic [31:0]    o_haddr_p;
+logic           o_hwrite_p;
+logic [2:0]     o_hsize_p;
+logic [2:0]     o_hburst_p;
+logic [3:0]     o_hprot_p;
+logic [1:0]     o_htrans_p;
+logic [31:0]    o_hwdata_p;
+logic           o_hmastlock_p;
+logic           i_hready_p;
+logic           i_hresp_p;
+logic [31:0]    i_hrdata_p;
+
+`ifdef DMA_APB
+assign i_pclk = apb_sl.pclk;
+assign i_pnreset = apb_sl.presetn;
+
+// APB connection to master
+assign i_psel_s = apb_sl.psel;
+assign i_penable_s = apb_sl.penable;
+assign i_paddr_s = apb_sl.paddr;
+assign i_pwrite_s = apb_sl.pwrite;
+assign i_pwdata_s = apb_sl.pwdata;
+assign apb_sl.pready = o_pready_s;
+assign apb_sl.pslverr = o_pslverr_s;
+assign apb_sl.prdata = o_prdata_s;
+`else
 assign i_hclk         = ahb_sl.hclk;
 assign i_hnreset      = ahb_sl.hresetn;
 // AHB connection to master
@@ -83,6 +119,7 @@ assign i_hwdata_s     = ahb_sl.hwdata;
 assign ahb_sl.hreadyout     = o_hreadyout_s;
 assign ahb_sl.hresp         = o_hresp_s;
 assign ahb_sl.hrdata        = o_hrdata_s;
+`endif
 // AHB connect to memory
 assign ahb_mp.haddr     = o_haddr_m;
 assign ahb_mp.hwrite    = o_hwrite_m;
@@ -317,6 +354,31 @@ assign ltrnscts[5] = i_ltr_s5;
 assign ltrnscts[6] = i_ltr_s6;
 assign ltrnscts[7] = i_ltr_s7;
 
+`ifdef DMA_APB
+dma_slave_apb3 dma_slave (
+    .i_clk(i_hclk),
+    .i_pclk(i_pclk),
+    .i_pnreset(i_pnreset),
+
+    // APB connection to master
+    .i_psel(i_psel_s),
+    .i_penable(i_penable_s),
+    .i_paddr(i_paddr_s),
+    .i_pwrite(i_pwrite_s),
+    .i_pwdata(i_pwdata_s),
+    .o_pready(o_pready_s),
+    .o_pslverr(o_pslverr_s),
+    .o_prdata(o_prdata_s),
+
+    // register interface
+    .o_addr(regs_addr),
+    .o_read_en(regs_read_en),
+    .o_write_en(regs_write_en),
+    .o_byte_strobe(regs_byte_strobe),
+    .o_wdata(regs_wdata),
+    .i_rdata(regs_rdata)
+);
+`else
 dma_slave_ahb3l dma_slave (
     .i_hclk(i_hclk),
     .i_hnreset(i_hnreset),
@@ -329,7 +391,6 @@ dma_slave_ahb3l dma_slave (
     .i_hwrite(i_hwrite_s),
     .i_hready(i_hready_s),
     .i_hwdata(i_hwdata_s),
-
     .o_hreadyout(o_hreadyout_s),
     .o_hresp(o_hresp_s),
     .o_hrdata(o_hrdata_s),
@@ -342,6 +403,7 @@ dma_slave_ahb3l dma_slave (
     .o_wdata(regs_wdata),
     .i_rdata(regs_rdata)
 );
+`endif
 
 generate
     for (ch = 0; ch < numb_ch; ++ch) begin: g_fifo_left_bytes
