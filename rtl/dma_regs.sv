@@ -459,7 +459,7 @@ generate
             else if (cr_write_en_prot[ch] && byte2_sel) cr_pburst[ch] <= i_wdata[22:21];
             else if (cr_pburst_correct[ch]) cr_pburst[ch] <= 2'h0;
 
-        assign cr_ct_swap[ch] = cr_en[ch] & cr_circ[ch] & i_cr_ct_swap[ch];
+        assign cr_ct_swap[ch] = cr_en[ch] & cr_dbm[ch] & cr_circ[ch] & i_cr_ct_swap[ch];
         always_ff @(posedge i_clk, negedge i_nreset)
             if (!i_nreset) cr_ct[ch] <= 1'd0;
             else if (cr_write_en_prot[ch] && byte2_sel) cr_ct[ch] <= i_wdata[19];
