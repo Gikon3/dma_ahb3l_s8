@@ -387,20 +387,20 @@ endgenerate
 
 // write regs
 always_comb begin: isr_clr_flags
-    logic isr_byte_sel;
+    int isr_byte_sel;
     logic write_en;
     logic reg_sel;
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
         isr_byte_sel = ch_cnt < numb_ch_max_lisr ? ch_cnt: ch_cnt - numb_ch_max_lisr;
         write_en = i_write_en & i_byte_strobe[isr_byte_sel];
         reg_sel = (reg_lifcr_sel && ch_cnt < numb_ch_max_lisr) || (reg_hifcr_sel && ch_cnt >= numb_ch_max_lisr);
-        isr_tcif_clr[ch_cnt] = (write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 0]) |
+        isr_tcif_clr[ch_cnt] = (write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 5]) |
             (cr_circ[ch_cnt] & isr_tcif[ch_cnt] & !pause[ch_cnt]);
-        isr_htif_clr[ch_cnt] = (write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 2]) |
+        isr_htif_clr[ch_cnt] = (write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 4]) |
             (cr_circ[ch_cnt] & isr_tcif[ch_cnt] & !pause[ch_cnt]);
         isr_teif_clr[ch_cnt] = write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 3];
-        isr_dmeif_clr[ch_cnt] = write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 4];
-        isr_feif_clr[ch_cnt] = write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 5];
+        isr_dmeif_clr[ch_cnt] = write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 2];
+        isr_feif_clr[ch_cnt] = write_en & reg_sel & i_wdata[isr_byte_sel * wbyte + 0];
     end
 end
 

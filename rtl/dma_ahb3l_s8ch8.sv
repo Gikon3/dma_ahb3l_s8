@@ -28,7 +28,7 @@ module dma_ahb3l_s8ch8 (
     input  logic [7:0]  i_ltr_s7,
 
     // interrupt
-    output logic        o_interrupt[7:0]
+    output logic [7:0]  o_interrupt
 );
 
 localparam numb_ch = 8;
