@@ -101,7 +101,7 @@ end
 
 always_comb begin: arbiter_fifo_left_data
     for (int ch_cnt = 0; ch_cnt < numb_ch; ++ch_cnt) begin
-        fifo_left_data[ch_cnt] = |fifo_left_beats[ch_cnt] | fifo_residual_data[ch_cnt];
+        fifo_left_data[ch_cnt] = (|fifo_left_beats[ch_cnt] & |i_ndt[ch_cnt]) | fifo_residual_data[ch_cnt];
     end
 end
 
